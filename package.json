@@ -1,0 +1,25 @@
+{
+  "name": "playwright_yamibo",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.9.0",
+      "onFail": "download"
+    }
+  },
+  "type": "module",
+  "devDependencies": {
+    "@types/node": "^26.0.1"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "patchright": "^1.61.1"
+  }
+}
