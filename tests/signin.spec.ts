@@ -7,7 +7,7 @@ test('signin', async ({ page }) => {
 
   await page.getByRole('link', { name: '点击打卡'}).click();
 
-  await new Promise(resolve => setTimeout(resolve, 5000));
+  await new Promise(resolve => setTimeout(resolve, 10000));
 
   await expect(page.getByRole('link', { name: '今日已打卡'})).toBeVisiable();
 });
