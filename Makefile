@@ -1,3 +1,7 @@
+install-browser:
+	@pnpm install
+	@pnpm exec patchright install chromium
+
 all:
 	@pnpm exec patchright test --headed tests/signin.spec.ts
 
