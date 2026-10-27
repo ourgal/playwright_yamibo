@@ -6,3 +6,6 @@ auth:
 
 tsdm-auth:
 	@pnpm exec patchright test --headed tests/tsdm-auth.setup.ts
+
+tsdm-signin:
+	@pnpm exec patchright test --headed tests/tsdm-signin.spec.ts
