@@ -3,7 +3,7 @@ import { test, expect } from 'patchright/test';
 const HOME_PAGE = "https://bbs.yamibo.com/plugin.php?id=zqlj_sign"
 
 test('signin', async ({ page }) => {
-  await page.goto(HOME_PAGE);
+  await page.goto(HOME_PAGE, { timeout: 600000});
 
   await page.getByRole('link', { name: '点击打卡'}).click();
 
