@@ -12,3 +12,6 @@ tsdm-signin:
 
 tuiliz-auth:
 	@pnpm exec patchright test --headed tests/tuiliz-auth.setup.ts
+
+tuiliz-signin:
+	@pnpm exec patchright test --headed tests/tuiliz-signin.spec.ts
