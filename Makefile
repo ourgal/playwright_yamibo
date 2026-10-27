@@ -24,3 +24,8 @@ auth-all:
 	@$(MAKE) auth
 	@$(MAKE) tsdm-auth
 	@$(MAKE) tuiliz-auth
+
+signin-all:
+	@$(MAKE) all
+	@$(MAKE) tsdm-signin
+	@$(MAKE) tuiliz-signin
