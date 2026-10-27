@@ -19,3 +19,8 @@ tuiliz-auth:
 
 tuiliz-signin:
 	@pnpm exec patchright test --headed tests/tuiliz-signin.spec.ts
+
+auth-all:
+	@$(MAKE) auth
+	@$(MAKE) tsdm-auth
+	@$(MAKE) tuiliz-auth
