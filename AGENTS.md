@@ -45,7 +45,7 @@ playwright.config.ts defines two projects: `setup` (matches `*.setup.ts`) and `c
 
 ## Gotchas
 
-- **Already-signed-in-today is a success path, not a failure.** These specs run daily and must be idempotent: tsdm checks `#qiandao` count === 0 then asserts `.datalist` is visible; tuiliz checks `.sign-mini.done`. Preserve this when editing.
+- **Already-signed-in-today is a success path, not a failure.** These specs run daily and must be idempotent: yamibo early-returns when the打卡 link already reads 今日已打卡; tsdm checks `#qiandao` count === 0 then asserts `.datalist` is visible; tuiliz checks `.sign-mini.done`. Preserve this when editing.
 - **Discuz login verification**: Discuz (tsdm, tuiliz) only issues its auth cookie after a successful login. Both setups `expect.poll` the cookie jar for a name ending in `auth`. Reuse this pattern for any new Discuz site.
 - **Long timeouts are deliberate.** Most `page.goto` calls use `timeout: 600000` (10 min) because the sites are slow/unstable. Don't "tighten" them.
 - `signin.spec.ts` (yamibo) contains a hardcoded 10-second `setTimeout` sleep after clicking 打卡 — leave it; the site needs it before the confirmation UI appears.
