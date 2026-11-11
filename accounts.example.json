@@ -1,0 +1,11 @@
+{
+  "yamibo": [
+    { "label": "main", "username": "your-yamibo-username", "password": "your-yamibo-password" }
+  ],
+  "tsdm": [
+    { "label": "main", "username": "your-tsdm-username", "password": "your-tsdm-password" }
+  ],
+  "tuiliz": [
+    { "label": "main", "username": "your-tuiliz-username", "password": "your-tuiliz-password" }
+  ]
+}

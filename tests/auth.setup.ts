@@ -1,25 +1,27 @@
 import { expect, test as setup } from 'patchright/test';
-import path from 'path';
-import dotenv from 'dotenv';
+import { accountsFor } from './accounts';
 
-dotenv.config();
+const accounts = accountsFor('yamibo');
 
-const currentDir = import.meta.dirname;
-const authFile = path.join(currentDir, '../playwright/.auth/user.json');
+if (accounts.length === 0) {
+  setup('authenticate yamibo', async () => {
+    setup.skip(true, 'no yamibo accounts in accounts.json');
+  });
+}
 
-setup('authenticate', async ({ page }) => {
-  await page.goto('https://bbs.yamibo.com/forum.php');
+for (const account of accounts) {
+  setup(`authenticate yamibo: ${account.label}`, async ({ page }) => {
+    await page.goto('https://bbs.yamibo.com/forum.php');
 
-  await page.getByRole('link', { name: '登录'}).click();
+    await page.getByRole('link', { name: '登录'}).click();
 
-  await page.fill('input[name="username"]', process.env.MY_USERNAME!);
-  await page.fill('input[name="password"]', process.env.MY_PASSWORD!);
+    await page.fill('input[name="username"]', account.username);
+    await page.fill('input[name="password"]', account.password);
 
-  await page.getByRole('button', { name: '登录'}).click();
+    await page.getByRole('button', { name: '登录'}).click();
 
-  await expect(page.getByRole('link', { name: '签到' })).toBeVisible();
+    await expect(page.getByRole('link', { name: '签到' })).toBeVisible();
 
-  // End of authentication steps.
-
-  await page.context().storageState({ path: authFile });
-});
+    await page.context().storageState({ path: account.authFile });
+  });
+}

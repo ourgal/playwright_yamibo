@@ -24,28 +24,35 @@ HTML report: `pnpm exec patchright show-report` (reporter is `html` in playwrigh
 
 ## Credentials
 
-Read from `.env` (gitignored) via `dotenv.config()` at the top of each setup file:
+Read from `accounts.json` (gitignored; copy the shape from `accounts.example.json`) by `tests/accounts.ts`:
 
-- yamibo: `MY_USERNAME`, `MY_PASSWORD`
-- tsdm: `TSDM_USERNAME`, `TSDM_PASSWORD`
-- tuiliz: `TUILIZ_USERNAME`, `TUILIZ_PASSWORD`
+```json
+{
+  "yamibo": [{ "label": "main", "username": "alice", "password": "secret" }],
+  "tsdm": [],
+  "tuiliz": []
+}
+```
 
-The tsdm and tuiliz auth setups **self-skip** when their credentials are missing; the yamibo setup does not — it fails on the non-null `!` assertions. When adding a site, prefer the self-skip pattern.
+`label` names the account in test titles and auth filenames; it must be unique per site (case-insensitive) and match `^[A-Za-z0-9._-]+$`. `.env`/dotenv are no longer used. All sites **self-skip** when they have no accounts, and each test file registers a skipped placeholder so Playwright does not report "No tests found".
 
 ## Architecture
 
 Two file types per site, paired by naming convention:
 
-- `tests/<site>-auth.setup.ts` — interactive login; saves cookies/storage to `playwright/.auth/<site>.json` (gitignored) via `page.context().storageState()`
-- `tests/<site>-signin.spec.ts` — loads the saved state with `test.use({ storageState: authFile })` and performs the daily check-in
+- `tests/<site>-auth.setup.ts` — interactive login; registers one `setup()` test per account from `accounts.json`, saving cookies/storage to `playwright/.auth/<site>-<label>.json` (gitignored) via `page.context().storageState()`
+- `tests/<site>-signin.spec.ts` — registers one `test.describe(<label>)` per account, each with `test.use({ storageState })` pointing at that account's auth file, and performs the daily check-in
 
-Auth and sign-in are separate runs so daily sign-ins never repeat the login flow. Exception: `signin.spec.ts` (yamibo) sets no storageState of its own — it relies on the `chromium` project's global `storageState: 'playwright/.auth/user.json'` in playwright.config.ts, so `make all` fails unless `make auth` ran first.
+Auth and sign-in are separate runs so daily sign-ins never repeat the login flow. Every spec supplies its own per-account storageState; there is no project-level `storageState` in playwright.config.ts and no shared `user.json`.
 
-playwright.config.ts defines two projects: `setup` (matches `*.setup.ts`) and `chromium`. Make targets always pin a single file, which is what makes this work: a setup file only matches the `setup` project, a spec only matches `chromium`. Running bare `pnpm exec patchright test` would execute everything at once — don't.
+`tests/accounts.ts` is the only reader of `accounts.json` (absolute paths via `import.meta.dirname`); it validates entries and exposes `accountsFor(site)`. It is not collected as a test file because it matches neither `*.setup.ts` nor the default spec/test pattern.
+
+playwright.config.ts defines two projects: `setup` (matches `*.setup.ts`) and `chromium`. Make targets always pin a single file, which is what makes this work: a setup file only matches the `setup` project, a spec only matches `chromium`. Running bare `pnpm exec patchright test` would execute everything at once — don't (it also runs auth and sign-in files concurrently). `fullyParallel: false` keeps accounts within a file sequential so they never log in simultaneously from one IP.
 
 ## Gotchas
 
 - **Already-signed-in-today is a success path, not a failure.** These specs run daily and must be idempotent: yamibo early-returns when the打卡 link already reads 今日已打卡; tsdm checks `#qiandao` count === 0 then asserts `.datalist` is visible; tuiliz checks `.sign-mini.done`. Preserve this when editing.
+- **Missing auth state skips per account.** Each sign-in test calls `test.skip(!account.hasAuth, ...)` before touching the page, so an account that was never authenticated is skipped with a "run make `<site>`-auth" message while the site's other accounts still run. Auth files are named by label, so reordering or renaming accounts in `accounts.json` invalidates that account's saved state.
 - **Discuz login verification**: Discuz (tsdm, tuiliz) only issues its auth cookie after a successful login. Both setups `expect.poll` the cookie jar for a name ending in `auth`. Reuse this pattern for any new Discuz site.
 - **Long timeouts are deliberate.** Most `page.goto` calls use `timeout: 600000` (10 min) because the sites are slow/unstable. Don't "tighten" them.
 - `signin.spec.ts` (yamibo) contains a hardcoded 10-second `setTimeout` sleep after clicking 打卡 — leave it; the site needs it before the confirmation UI appears.
@@ -60,4 +67,4 @@ playwright.config.ts defines two projects: `setup` (matches `*.setup.ts`) and `c
 
 ## Adding a new site
 
-Follow the established pair: copy a `<site>-auth.setup.ts` + `<site>-signin.spec.ts`, add `<site>-auth` and `<site>-signin` Make targets (plus entries in `auth-all`/`signin-all`), add `<SITE>_USERNAME`/`<SITE>_PASSWORD` to `.env`, and use the cookie-poll login check + idempotent "already signed" handling. If it's a Discuz site, the tsdm files are the template; if it matches yamibo's zqlj_sign plugin, tuiliz is the template.
+Follow the established pair: copy a `<site>-auth.setup.ts` + `<site>-signin.spec.ts`, add `<site>-auth` and `<site>-signin` Make targets (plus entries in `auth-all`/`signin-all`), add the site key to the `Site` type and an empty array (or accounts) in `accounts.json`/`accounts.example.json`, and use `accountsFor(site)` with the cookie-poll login check + idempotent "already signed" handling. If it's a Discuz site, the tsdm files are the template; if it matches yamibo's zqlj_sign plugin, tuiliz is the template.

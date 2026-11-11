@@ -1,26 +1,38 @@
 import { expect, test } from 'patchright/test';
-import path from 'path';
+import { accountsFor } from './accounts';
 
 const SIGN_PAGE = 'https://www.tuiliz.com/plugin.php?id=zqlj_sign';
-const authFile = path.join(import.meta.dirname, '../playwright/.auth/tuiliz.json');
+const accounts = accountsFor('tuiliz');
 
-test.use({ storageState: authFile });
+if (accounts.length === 0) {
+  test('tuiliz daily sign-in', async () => {
+    test.skip(true, 'no tuiliz accounts in accounts.json');
+  });
+}
 
-test('tuiliz daily sign-in', async ({ page }) => {
-  await page.goto(SIGN_PAGE, { timeout: 600000 });
+for (const account of accounts) {
+  test.describe(account.label, () => {
+    test.use({ storageState: account.authFile });
 
-  const button = page.locator('#signBtn');
+    test('tuiliz daily sign-in', async ({ page }) => {
+      test.skip(!account.hasAuth, `run make tuiliz-auth for account ${account.label} first`);
 
-  if ((await page.locator('.sign-mini.done').count()) > 0) {
-    return;
-  }
+      await page.goto(SIGN_PAGE, { timeout: 600000 });
 
-  if ((await page.locator('.sign-mini.guest').count()) > 0) {
-    throw new Error('not signed in; run `make tuiliz-auth` first');
-  }
+      const button = page.locator('#signBtn');
 
-  await button.click();
+      if ((await page.locator('.sign-mini.done').count()) > 0) {
+        return;
+      }
 
-  await expect(button).toHaveClass(/\bdone\b/, { timeout: 60000 });
-  await expect(button.locator('.bt')).toHaveText('已签到');
-});
+      if ((await page.locator('.sign-mini.guest').count()) > 0) {
+        throw new Error('not signed in; run `make tuiliz-auth` first');
+      }
+
+      await button.click();
+
+      await expect(button).toHaveClass(/\bdone\b/, { timeout: 60000 });
+      await expect(button.locator('.bt')).toHaveText('已签到');
+    });
+  });
+}
