@@ -12,11 +12,13 @@ if (accounts.length === 0) {
 
 for (const account of accounts) {
   test.describe(account.label, () => {
+    // Runs at collection time: a missing auth file would otherwise fail the context
+    // fixture while reading storageState, before the test body could skip.
+    test.skip(!account.hasAuth, `run make tsdm-auth for account ${account.label} first`);
+
     test.use({ storageState: account.authFile });
 
     test('tsdm daily sign-in', async ({ page }) => {
-      test.skip(!account.hasAuth, `run make tsdm-auth for account ${account.label} first`);
-
       await page.goto(SIGN_PAGE, { timeout: 600000 });
 
       const form = page.locator('#qiandao');
