@@ -5,6 +5,11 @@ import { defineConfig, devices } from 'patchright/test';
  */
 export default defineConfig({
   testDir: './tests',
+  /* Per-test budget. The specs allow up to 10 minutes for a single navigation
+     (page.goto({ timeout: 600000 })); without raising this, the default 30s test
+     timeout fires first and those per-action timeouts are never reachable. Kept a
+     minute above the navigation budget so the assertions after it still have room. */
+  timeout: 11 * 60_000,
   /* Accounts within a file run sequentially to avoid concurrent logins from one IP. */
   fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
