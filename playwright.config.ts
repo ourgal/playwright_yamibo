@@ -14,19 +14,25 @@ export default defineConfig({
   fullyParallel: false,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
+  /* Retry once locally as well: these runs are daily, and a one-off network hiccup
+     shouldn't cost the day's check-in. Specs are idempotent, so a retry that finds
+     "already signed today" passes. */
+  retries: process.env.CI ? 2 : 1,
   /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  /* 'list' keeps the terminal log readable; the HTML report is written but never
+     auto-opened, so unattended/scheduled runs don't pop a browser window. */
+  reporter: [['list'], ['html', { open: 'never' }]],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
     // baseURL: 'http://localhost:3000',
 
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    /* Keep evidence from the attempt that actually failed. These sites change their
+       DOM without notice, and a run that failed overnight has no other record.
+       See https://playwright.dev/docs/trace-viewer */
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
   },
 
   /* Configure projects for major browsers */
