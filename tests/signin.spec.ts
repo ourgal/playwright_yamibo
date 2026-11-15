@@ -28,9 +28,9 @@ for (const account of accounts) {
 
       await page.getByRole('link', { name: '点击打卡'}).click();
 
-      await new Promise(resolve => setTimeout(resolve, 10000));
-
-      await expect(page.getByRole('link', { name: '今日已打卡'})).toBeVisible();
+      // Site shows the confirmation UI a while after the click; the polling
+      // assertion waits only as long as needed instead of a fixed 10s sleep.
+      await expect(page.getByRole('link', { name: '今日已打卡'})).toBeVisible({ timeout: 60000 });
     });
   });
 }
