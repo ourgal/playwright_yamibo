@@ -14,6 +14,9 @@ tsdm-auth:
 tsdm-signin:
 	@pnpm exec patchright test --headed tests/tsdm-signin.spec.ts
 
+tsdm-redpacket:
+	@pnpm exec patchright test --headed tests/tsdm-redpacket.spec.ts
+
 tuiliz-auth:
 	@pnpm exec patchright test --headed tests/tuiliz-auth.setup.ts
 
@@ -28,4 +31,5 @@ auth-all:
 signin-all:
 	@$(MAKE) all
 	@$(MAKE) tsdm-signin
+	@$(MAKE) tsdm-redpacket
 	@$(MAKE) tuiliz-signin
