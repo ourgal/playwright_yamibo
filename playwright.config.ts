@@ -28,6 +28,20 @@ export default defineConfig({
     /* Base URL to use in actions like `await page.goto('')`. */
     // baseURL: 'http://localhost:3000',
 
+    /* Chrome's "allow access to local network" is a native Local Network Access
+       permission bubble that automation cannot click. Grant it to every context
+       so unattended runs never stall on it. See microsoft/playwright#37861. */
+    permissions: ['local-network-access'],
+    /* Belt-and-suspenders: disable the LNA / Private Network Access checks at the
+       browser level too. The prompt is intermittent and the feature name has
+       changed across Chromium versions, so list the known aliases (unknown ones
+       are harmlessly ignored). */
+    launchOptions: {
+      args: [
+        '--disable-features=LocalNetworkAccessChecks,BlockInsecurePrivateNetworkRequests,PrivateNetworkAccessSendPreflights,PrivateNetworkAccessRespectPreflightResults',
+      ],
+    },
+
     /* Keep evidence from the attempt that actually failed. These sites change their
        DOM without notice, and a run that failed overnight has no other record.
        See https://playwright.dev/docs/trace-viewer */
