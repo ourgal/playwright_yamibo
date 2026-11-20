@@ -24,7 +24,7 @@ export function accountsFor(site: Site): Account[] {
   try {
     file = JSON.parse(fs.readFileSync(accountsPath, 'utf8'));
   } catch (error) {
-    throw new Error(`accounts.json is not valid JSON: ${(error as Error).message}`);
+    throw new Error(`accounts.json is not valid JSON: ${(error as Error).message}`, { cause: error });
   }
 
   if (typeof file !== 'object' || file === null || Array.isArray(file)) {
